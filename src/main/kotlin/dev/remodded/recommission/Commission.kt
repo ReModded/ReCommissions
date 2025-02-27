@@ -1,9 +1,7 @@
 package dev.remodded.recommission
 
 import dev.remodded.recommission.command.argument.CustomItemPredicate
-import dev.remodded.recommission.gui.CommissionClaimMenu
-import dev.remodded.recommission.gui.CommissionDonateMenu
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes.itemStack
+import dev.remodded.recommission.gui.CommissionMenu
 import org.bukkit.block.ShulkerBox
 import org.bukkit.configuration.Configuration
 import org.bukkit.configuration.file.YamlConfiguration
@@ -18,26 +16,15 @@ data class Commission(
 
     val items: MutableList<Item> = arrayListOf()
 ) {
-    private val donateMenuLazy = lazy { CommissionDonateMenu(this) }
-    val donateMenu by donateMenuLazy
-
-    private val claimMenuLazy = lazy { CommissionClaimMenu(this) }
-    val claimMenu by claimMenuLazy
+    val openMenus: MutableList<CommissionMenu> = arrayListOf()
 
     fun update() {
-        if (donateMenuLazy.isInitialized())
-            donateMenu.update()
-
-        if (claimMenuLazy.isInitialized())
-            claimMenu.update()
+        openMenus.forEach { it.update() }
     }
 
     fun close() {
-        if (donateMenuLazy.isInitialized())
-            donateMenu.inventory.close()
-
-        if (claimMenuLazy.isInitialized())
-            claimMenu.inventory.close()
+        openMenus.forEach { it.inventory.close() }
+        openMenus.clear()
     }
 
     fun isFulfilled() = items.all { it.isFulfilled() }

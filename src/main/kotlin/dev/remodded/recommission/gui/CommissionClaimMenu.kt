@@ -6,6 +6,7 @@ import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryAction
@@ -37,6 +38,14 @@ class CommissionClaimMenu(
         return itemStack
     }
 
+    companion object {
+        fun open(player: Player, commission: Commission) {
+            val menu = CommissionClaimMenu(commission)
+            player.openInventory(menu.inventory)
+            commission.openMenus.add(menu)
+        }
+    }
+
     object Listener : org.bukkit.event.Listener {
         @EventHandler
         fun onInventoryClick(ev: InventoryClickEvent) {
@@ -45,7 +54,7 @@ class CommissionClaimMenu(
             if (commissionMenu !is CommissionClaimMenu || clickedInventory == null) return
 
             // We only care about the commission inventory
-            if (ev.clickedInventory != ev.inventory) {
+            if (ev.clickedInventory != commissionMenu.inventory) {
                 if (setOf(ClickType.SHIFT_RIGHT, ClickType.SHIFT_LEFT).contains(ev.click))
                     ev.isCancelled = true
                 return

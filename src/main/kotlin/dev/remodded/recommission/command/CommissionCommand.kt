@@ -13,6 +13,8 @@ import com.mojang.brigadier.tree.LiteralCommandNode
 import dev.remodded.recommission.Commission
 import dev.remodded.recommission.ReCommission
 import dev.remodded.recommission.command.argument.CustomItemPredicate
+import dev.remodded.recommission.gui.CommissionClaimMenu
+import dev.remodded.recommission.gui.CommissionDonateMenu
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands.argument
 import io.papermc.paper.command.brigadier.Commands.literal
@@ -124,7 +126,7 @@ object CommissionCommand {
         if (!commission.isFulfilled())
             throw SimpleCommandExceptionType(LiteralMessage("Commission ${commission.name} is not fulfilled yet.")).create()
 
-        player.openInventory(commission.claimMenu.inventory)
+        CommissionClaimMenu.open(player, commission)
 
         return 1
     }
@@ -136,7 +138,7 @@ object CommissionCommand {
 
         val commission = getCommission(ctx)
 
-        player.openInventory(commission.donateMenu.inventory)
+        CommissionDonateMenu.open(player, commission)
 
         return Command.SINGLE_SUCCESS
     }

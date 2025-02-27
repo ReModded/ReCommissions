@@ -6,6 +6,7 @@ import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryAction
@@ -43,10 +44,18 @@ class CommissionDonateMenu(
             }
         )))
         itemStack.unsetData(DataComponentTypes.ATTRIBUTE_MODIFIERS)
+        itemStack.setData(DataComponentTypes.HIDE_TOOLTIP)
 
         return itemStack
     }
 
+    companion object {
+        fun open(player: Player, commission: Commission) {
+            val menu = CommissionDonateMenu(commission)
+            player.openInventory(menu.inventory)
+            commission.openMenus.add(menu)
+        }
+    }
 
     object Listener : org.bukkit.event.Listener {
         @EventHandler

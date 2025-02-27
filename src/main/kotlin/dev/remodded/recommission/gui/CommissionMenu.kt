@@ -11,13 +11,14 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 
 abstract class CommissionMenu(
     val commission: Commission
 ) : InventoryHolder {
-    private val inv = Bukkit.createInventory(this, 6 * 9, Component.text("Commission Inventory"))
+    private val inv = Bukkit.createInventory(this, 6 * 9, Component.translatable("commission.gui.title"))
 
     var page: Int = 0
         private set
@@ -117,6 +118,14 @@ abstract class CommissionMenu(
                     }
                 }
             }
+        }
+
+        @EventHandler
+        fun onInventoryClose(ev: InventoryCloseEvent) {
+            val commissionMenu = ev.inventory.holder
+            if (commissionMenu !is CommissionMenu) return
+
+            commissionMenu.commission.openMenus.remove(commissionMenu)
         }
     }
 }
