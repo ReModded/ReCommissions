@@ -20,7 +20,7 @@ object CommissionLang {
             (get(translations) as MutableMap<*, *>).clear()
         }
 
-        for (lang in setOf(Locale.US, Locale.FRANCE, Locale.of("pl", "PL"))) {
+        for (lang in setOf(Locale.US, Locale.FRENCH, Locale.of("pl", "PL"))) {
             val bundle = ResourceBundle.getBundle("lang.Bundle", lang, UTF8ResourceBundleControl.get())
             translations.registerAll(lang, bundle, true)
         }
