@@ -29,21 +29,20 @@ import java.util.concurrent.CompletableFuture
 object CommissionCommand {
     fun register(): LiteralCommandNode<CommandSourceStack> =
         literal("commission")
-            .then(
-                literal("test")
-                    .executes { ctx ->
+//            .then(
+//                literal("test")
+//                    .executes { ctx ->
 //                        val config = YamlConfiguration.loadConfiguration(Path("plugins/ReCommission/config.yml").toFile())
 //                        val list = config.getList("test")
 //                        println(list)
 //                        println(list?.size)
 //                        println(list?.get(0)?.javaClass)
-
-                        1
-                    }
-            )
+//                        1
+//                    }
+//            )
             .then(
                 literal("reload")
-                    .requires { it.sender.hasPermission("recommission.command.commission.manage") }
+                    .requires { it.sender.hasPermission("recommission.command.commission.reload") }
                     .executes { ctx ->
                         ctx.source.sender.sendMessage(Component.translatable("commission.command.commission.reloading"))
                         ReCommission.INSTANCE.reload()
@@ -53,7 +52,7 @@ object CommissionCommand {
             )
             .then(
                 literal("create")
-                    .requires { it.sender.hasPermission("recommission.command.commission.manage") }
+                    .requires { it.sender.hasPermission("recommission.command.commission.create") }
                     .then(
                         argument("commission", StringArgumentType.string())
                             .requires { it.sender.hasPermission("recommission.command.commission.manage") }
@@ -63,7 +62,7 @@ object CommissionCommand {
             .then(argument("commission", StringArgumentType.string())
                 .suggests(::suggestCommissions)
                 .then(literal("add")
-                    .requires { it.sender.hasPermission("recommission.command.commission.manage") }
+                    .requires { it.sender.hasPermission("recommission.command.commission.add") }
                     .then(argument("item", CustomItemPredicate())
                         .then(argument("amount", IntegerArgumentType.integer(1))
                             .then(argument("display", ArgumentTypes.itemStack())
