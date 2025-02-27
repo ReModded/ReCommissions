@@ -37,10 +37,6 @@ tasks {
         }
     }
 
-    build {
-        dependsOn("shadowJar")
-    }
-
     withType<AbstractRun> {
         javaLauncher = project.javaToolchains.launcherFor {
             vendor = JvmVendorSpec.JETBRAINS
