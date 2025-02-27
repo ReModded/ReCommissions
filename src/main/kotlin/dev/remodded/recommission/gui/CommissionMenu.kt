@@ -85,13 +85,9 @@ abstract class CommissionMenu(
     }
 
     fun getViewerLocale(): Locale {
-        val r = inv.viewers.firstOrNull()?.let {
+        return inv.viewers.firstOrNull()?.let {
             if (it is Player) it.locale() else null
         } ?: Locale.US
-
-        println(r)
-
-        return r
     }
 
     override fun getInventory() = inv
