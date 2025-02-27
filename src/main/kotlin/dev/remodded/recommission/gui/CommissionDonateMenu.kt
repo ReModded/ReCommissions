@@ -1,6 +1,7 @@
 package dev.remodded.recommission.gui
 
 import dev.remodded.recommission.Commission
+import dev.remodded.recommission.translate
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
@@ -16,7 +17,7 @@ import org.bukkit.inventory.ItemStack
 
 class CommissionDonateMenu(
     commission: Commission
-): CommissionMenu(commission) {
+): CommissionMenu(commission, Component.translatable("commission.gui.donate.title")) {
 
     override fun getDisplayItem(item: Commission.Item): ItemStack {
         val itemStack = item.display.clone()
@@ -38,13 +39,12 @@ class CommissionDonateMenu(
                         else -> NamedTextColor.GREEN
                     })
                 else
-                    Component.text("No items left", NamedTextColor.GOLD)
+                    Component.translatable("commission.gui.donate.fulfilled", NamedTextColor.GOLD)
             ).style {
                 it.decoration(TextDecoration.ITALIC, false)
-            }
+            }.translate(getViewerLocale())
         )))
         itemStack.unsetData(DataComponentTypes.ATTRIBUTE_MODIFIERS)
-        itemStack.setData(DataComponentTypes.HIDE_TOOLTIP)
 
         return itemStack
     }
@@ -53,6 +53,7 @@ class CommissionDonateMenu(
         fun open(player: Player, commission: Commission) {
             val menu = CommissionDonateMenu(commission)
             player.openInventory(menu.inventory)
+            menu.update()
             commission.openMenus.add(menu)
         }
     }
@@ -97,7 +98,7 @@ class CommissionDonateMenu(
             }
 
             if (!ev.isCancelled)
-                ev.whoClicked.sendMessage(Component.text("Invalid commission item", NamedTextColor.RED))
+                ev.whoClicked.sendMessage(Component.translatable("commission.gui.donate.invalid", NamedTextColor.RED))
 
             ev.isCancelled = true
         }

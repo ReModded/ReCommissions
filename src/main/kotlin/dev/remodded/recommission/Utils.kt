@@ -1,4 +1,11 @@
+@file:Suppress("unused")
+
 package dev.remodded.recommission
+
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TranslatableComponent
+import net.kyori.adventure.translation.GlobalTranslator
+import java.util.Locale
 
 
 /**
@@ -17,4 +24,10 @@ inline fun <T> MutableIterable<T>.foreachConsume(action: (T) -> Boolean): Boolea
         }
 
     return removed
+}
+
+fun Component.translate(locale: Locale): Component {
+    if (this is TranslatableComponent)
+        return GlobalTranslator.render(this, locale)
+    return this
 }

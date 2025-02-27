@@ -1,6 +1,7 @@
 package dev.remodded.recommission.gui
 
 import dev.remodded.recommission.Commission
+import dev.remodded.recommission.translate
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
@@ -14,21 +15,18 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
+import java.util.*
 
 abstract class CommissionMenu(
-    val commission: Commission
+    val commission: Commission,
+    title: Component,
 ) : InventoryHolder {
-    private val inv = Bukkit.createInventory(this, 6 * 9, Component.translatable("commission.gui.title"))
+    private val inv = Bukkit.createInventory(this, 6 * 9, title)
 
     var page: Int = 0
         private set
 
-    init {
-        update()
-    }
-
     protected abstract fun getDisplayItem(item: Commission.Item): ItemStack
-
 
     fun update() {
         setPage(page)
@@ -52,22 +50,22 @@ abstract class CommissionMenu(
 
         if (startIndex > 0)
             inv.setItem(PREV_PAGE_SLOT, ItemStack(Material.PAPER).apply {
-                setData(DataComponentTypes.ITEM_NAME, Component.text("Previous Page"))
-                setData(DataComponentTypes.LORE, ItemLore.lore(listOf(Component.text("Click to go to the previous page",
+                setData(DataComponentTypes.ITEM_NAME, Component.translatable("commission.gui.prev_page").translate(getViewerLocale()))
+                setData(DataComponentTypes.LORE, ItemLore.lore(listOf(Component.translatable("commission.gui.prev_page.tooltip",
                     Style.style { s ->
                         s.decoration(TextDecoration.ITALIC, false)
                     }
-                ))))
+                ).translate(getViewerLocale()))))
             })
 
         if (startIndex + PAGE_SIZE < commission.items.size)
             inv.setItem(NEXT_PAGE_SLOT, ItemStack(Material.PAPER).apply {
-                setData(DataComponentTypes.ITEM_NAME, Component.text("Next Page"))
-                setData(DataComponentTypes.LORE, ItemLore.lore(listOf(Component.text("Click to go to the next page",
+                setData(DataComponentTypes.ITEM_NAME, Component.translatable("commission.gui.next_page").translate(getViewerLocale()))
+                setData(DataComponentTypes.LORE, ItemLore.lore(listOf(Component.translatable("commission.gui.next_page.tooltip",
                     Style.style { s ->
                         s.decoration(TextDecoration.ITALIC, false)
                     }
-                ))))
+                ).translate(getViewerLocale()))))
             })
 
         inv.viewers.forEach {
@@ -84,6 +82,16 @@ abstract class CommissionMenu(
             return commission.items[itemIndex]
 
         return null
+    }
+
+    fun getViewerLocale(): Locale {
+        val r = inv.viewers.firstOrNull()?.let {
+            if (it is Player) it.locale() else null
+        } ?: Locale.US
+
+        println(r)
+
+        return r
     }
 
     override fun getInventory() = inv

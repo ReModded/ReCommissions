@@ -1,6 +1,7 @@
 package dev.remodded.recommission.gui
 
 import dev.remodded.recommission.Commission
+import dev.remodded.recommission.translate
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
@@ -16,7 +17,7 @@ import org.bukkit.inventory.ItemStack
 
 class CommissionClaimMenu(
     commission: Commission
-): CommissionMenu(commission) {
+): CommissionMenu(commission, Component.translatable("commission.gui.claim.title")) {
 
     override fun getDisplayItem(item: Commission.Item): ItemStack {
         val itemStack = item.display.clone()
@@ -26,12 +27,13 @@ class CommissionClaimMenu(
         itemStack.setData(DataComponentTypes.LORE, ItemLore.lore(listOf(
             (
                 if (item.hasBeenClaimed())
-                    Component.text("Claimed", NamedTextColor.GOLD)
+                    Component.translatable("commission.gui.claim.claimed", NamedTextColor.GOLD)
                 else
-                    Component.text("Left: $amount")
+                    Component.translatable("commission.gui.claim.left", NamedTextColor.GOLD)
+                        .arguments(Component.text(amount.toString()))
             ).style {
                 it.decoration(TextDecoration.ITALIC, false)
-            }
+            }.translate(getViewerLocale())
         )))
         itemStack.unsetData(DataComponentTypes.ATTRIBUTE_MODIFIERS)
 
@@ -42,6 +44,7 @@ class CommissionClaimMenu(
         fun open(player: Player, commission: Commission) {
             val menu = CommissionClaimMenu(commission)
             player.openInventory(menu.inventory)
+            menu.update()
             commission.openMenus.add(menu)
         }
     }

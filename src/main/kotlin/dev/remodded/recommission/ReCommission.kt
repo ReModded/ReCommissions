@@ -26,7 +26,7 @@ class ReCommission : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(CommissionClaimMenu.Listener, this)
         Bukkit.getPluginManager().registerEvents(CommissionDonateMenu.Listener, this)
 
-        reloadCommissions()
+        reload()
     }
 
     override fun onDisable() {
@@ -41,6 +41,11 @@ class ReCommission : JavaPlugin() {
         for (commission in commissions) {
             commission.save(commissionsDir)
         }
+    }
+
+    fun reload() {
+        CommissionLang.reload()
+        reloadCommissions()
     }
 
     fun reloadCommissions() {

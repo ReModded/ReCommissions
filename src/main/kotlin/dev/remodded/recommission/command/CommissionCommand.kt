@@ -1,7 +1,6 @@
 package dev.remodded.recommission.command
 
 import com.mojang.brigadier.Command
-import com.mojang.brigadier.LiteralMessage
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
@@ -15,6 +14,7 @@ import dev.remodded.recommission.ReCommission
 import dev.remodded.recommission.command.argument.CustomItemPredicate
 import dev.remodded.recommission.gui.CommissionClaimMenu
 import dev.remodded.recommission.gui.CommissionDonateMenu
+import io.papermc.paper.adventure.AdventureComponent
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands.argument
 import io.papermc.paper.command.brigadier.Commands.literal
@@ -24,7 +24,6 @@ import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import java.util.concurrent.CompletableFuture
-import kotlin.jvm.java
 
 @Suppress("UnstableApiUsage")
 object CommissionCommand {
@@ -46,9 +45,9 @@ object CommissionCommand {
                 literal("reload")
                     .requires { it.sender.hasPermission("recommission.command.commission.manage") }
                     .executes { ctx ->
-                        ctx.source.sender.sendMessage(Component.text("Reloading commissions..."))
-                        ReCommission.INSTANCE.reloadCommissions()
-                        ctx.source.sender.sendMessage(Component.text("Commissions reloaded."))
+                        ctx.source.sender.sendMessage(Component.translatable("commission.command.commission.reloading"))
+                        ReCommission.INSTANCE.reload()
+                        ctx.source.sender.sendMessage(Component.translatable("commission.command.commission.reloaded"))
                         1
                     }
             )
@@ -91,7 +90,10 @@ object CommissionCommand {
         val name = StringArgumentType.getString(ctx, "commission")
 
         if (ReCommission.INSTANCE.commissions.any { it.name == name }) {
-            ctx.source.sender.sendMessage(Component.text("Commission with name $name already exists", NamedTextColor.RED))
+            ctx.source.sender.sendMessage(
+                Component.translatable("commission.command.commission.create.exists", NamedTextColor.RED)
+                    .arguments(Component.text(name))
+            )
             return 0
         }
 
@@ -99,7 +101,10 @@ object CommissionCommand {
         ReCommission.INSTANCE.commissions.add(commission)
         commission.save()
 
-        ctx.source.sender.sendMessage(Component.text("Commission $name created", NamedTextColor.GREEN))
+        ctx.source.sender.sendMessage(
+            Component.translatable("commission.command.commission.create", NamedTextColor.GREEN)
+                .arguments(Component.text(name))
+        )
         return Command.SINGLE_SUCCESS
     }
 
@@ -112,7 +117,10 @@ object CommissionCommand {
         commission.update()
         commission.save()
 
-        ctx.source.sender.sendMessage(Component.text("Added item to commission ${commission.name}", NamedTextColor.GREEN))
+        ctx.source.sender.sendMessage(
+            Component.translatable("commission.command.commission.add", NamedTextColor.GREEN)
+                .arguments(Component.text(commission.name))
+        )
         return Command.SINGLE_SUCCESS
     }
 
@@ -124,7 +132,10 @@ object CommissionCommand {
         val commission = getCommission(ctx)
 
         if (!commission.isFulfilled())
-            throw SimpleCommandExceptionType(LiteralMessage("Commission ${commission.name} is not fulfilled yet.")).create()
+            throw SimpleCommandExceptionType(AdventureComponent(
+                Component.translatable("commission.command.commission.claim.not_fulfilled")
+                    .arguments(Component.text(commission.name))
+            )).create()
 
         CommissionClaimMenu.open(player, commission)
 
@@ -144,8 +155,15 @@ object CommissionCommand {
     }
 
 
-    private val NOT_PLAYER_EXCEPTION = DynamicCommandExceptionType { target -> LiteralMessage("Target $target is not a player") }
-    private val UNKNOWN_COMMISSION_EXCEPTION = DynamicCommandExceptionType { commissionName -> LiteralMessage("Commission $commissionName not found") }
+    private val NOT_PLAYER_EXCEPTION = DynamicCommandExceptionType { target -> AdventureComponent(
+        Component.translatable("commission.command.commission.error.not_player")
+            .arguments(Component.text(target as String))
+    )}
+    private val UNKNOWN_COMMISSION_EXCEPTION = DynamicCommandExceptionType { commissionName -> AdventureComponent(
+        Component.translatable("commission.command.commission.error.unknown")
+            .arguments(Component.text(commissionName as String))
+    )}
+
     private fun getCommission(ctx: CommandContext<CommandSourceStack>): Commission {
         val commissionName = StringArgumentType.getString(ctx, "commission")
         return ReCommission.INSTANCE.commissions.find { it.name == commissionName } ?:
