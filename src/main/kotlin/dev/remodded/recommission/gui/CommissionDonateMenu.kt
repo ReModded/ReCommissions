@@ -88,7 +88,7 @@ class CommissionDonateMenu(
                 return
 
             for (commissionItem in commissionMenu.commission.items) {
-                if (commissionItem.tryDonate(item)) {
+                if (commissionItem.tryDonate(item, ev.whoClicked)) {
                     ev.isCancelled = true
 
                     commissionMenu.commission.save()

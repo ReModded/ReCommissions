@@ -5,9 +5,11 @@ import dev.remodded.recommission.gui.CommissionMenu
 import org.bukkit.block.ShulkerBox
 import org.bukkit.configuration.Configuration
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.entity.HumanEntity
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
 import java.io.File
+import java.util.*
 import java.util.function.Predicate
 import kotlin.math.min
 
@@ -34,8 +36,10 @@ data class Commission(
         val display: ItemStack,
 
         var amount: Int,
-        var left: Int = amount,
+        val donations: MutableMap<UUID, Int> = hashMapOf(),
     ) : Predicate<ItemStack> {
+        val left: Int get() = amount - donations.values.sum()
+
         private val singleItem = predicate.tryGetSingleItem()
         private val isSingleItem: Boolean get() = singleItem != null
 
@@ -53,9 +57,10 @@ data class Commission(
          * Tries to donate the given [inStack] to the commission.
          *
          * @param inStack the stack to donate
+         * @param player player that made a donation
          * @return the donated item, or null if no item was donated
          */
-        fun tryDonate(inStack: ItemStack): Boolean {
+        fun tryDonate(inStack: ItemStack, player: HumanEntity): Boolean {
             if (isFulfilled())
                 return false
 
@@ -63,7 +68,7 @@ data class Commission(
                 return false
 
             if (isShulkerBox(inStack))
-                if (handleShulkerBox(inStack) { stack -> if (tryDonate(stack)) stack else null })
+                if (handleShulkerBox(inStack) { stack -> if (tryDonate(stack, player)) stack else null })
                     return true
 
             if (!test(inStack))
@@ -89,7 +94,7 @@ data class Commission(
             }
 
             inStack.amount -= toConsume
-            left -= toConsume
+            donations[player.uniqueId] = (donations[player.uniqueId] ?: 0) + toConsume
 
             return true
         }
@@ -203,17 +208,13 @@ data class Commission(
                 return false
 
             val inventory = blockStateMeta.inventory
-//            if (inventory.isEmpty)
-//                return false
 
             var hadValid = false
 
             for (slot in 0 ..< inventory.size) {
                 val itemStack = inventory.getItem(slot) ?: ItemStack.empty()
 
-                val result = action(itemStack)
-                if (result == null)
-                    continue
+                val result = action(itemStack) ?: continue
 
                 inventory.setItem(slot, result)
 
@@ -233,15 +234,14 @@ data class Commission(
                 "amount" to amount,
                 "predicate" to predicate.predicateString,
                 "display" to display,
-                "left" to left,
                 "consumedItems" to consumedItems,
+                "donations" to donations.mapKeys { it.key.toString() },
             )
         }
 
         companion object {
             fun load(config: Map<String, Any>): Item {
                 val amount = config["amount"] as? Int ?: 1
-                val left = config["left"] as? Int ?: amount
 
                 val predicateString = config["predicate"] as? String ?: throw IllegalArgumentException("Predicate is required")
                 val predicate = CustomItemPredicate.Result.fromString(predicateString)
@@ -250,7 +250,9 @@ data class Commission(
 
 
                 val display = config["display"] as? ItemStack ?: predicateItem ?: throw IllegalArgumentException("Display is required")
-                val item = Item(predicate, display, amount, left)
+                @Suppress("UNCHECKED_CAST")
+                val donations = HashMap(((config["display"] as? Map<String, Int>) ?: hashMapOf()).mapKeys { UUID.fromString(it.key)!! })
+                val item = Item(predicate, display, amount, donations)
 
                 item.consumedItems.addAll((config["consumedItems"] as? List<*>)?.filterIsInstance<ItemStack>() ?: emptyList())
 
