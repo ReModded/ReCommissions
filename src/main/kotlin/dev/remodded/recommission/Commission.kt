@@ -251,7 +251,7 @@ data class Commission(
 
                 val display = config["display"] as? ItemStack ?: predicateItem ?: throw IllegalArgumentException("Display is required")
                 @Suppress("UNCHECKED_CAST")
-                val donations = HashMap(((config["display"] as? Map<String, Int>) ?: hashMapOf()).mapKeys { UUID.fromString(it.key)!! })
+                val donations = HashMap(((config["donations"] as? Map<String, Int>) ?: hashMapOf()).mapKeys { UUID.fromString(it.key)!! })
                 val item = Item(predicate, display, amount, donations)
 
                 item.consumedItems.addAll((config["consumedItems"] as? List<*>)?.filterIsInstance<ItemStack>() ?: emptyList())
